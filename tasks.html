@@ -4,13 +4,15 @@
   <meta charset="utf-8">
   <title>Task List</title>
   <link rel="stylesheet" type="text/css" href="styles/tasks.css" media="screen" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  <script src="http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
 </head>
 <body>
   <header>
     <span>Task List</span>
   </header>
   <main>
-    <section>
+	 <section id="taskCreation" class="not">
       <form>
         <div>
           <label>Task</label><input type="text" required="required" name="task" class="large" placeholder="Add a task" />
@@ -25,7 +27,7 @@
                                   </select>
         </div>
         <nav>
-          <a href="#">Save task</a> <a href="#">Clear task</a>
+          <a href="#" id="saveTask">Save task</a> <a href="#">Clear task</a>
         </nav>
       </form>
     </section>
@@ -33,55 +35,24 @@
     <section>
       <table id="tblTasks">
         <colgroup>
-          <col width="50%" />
-          <col width="25%"  />
-          <col width="25%"  />
+          <col width="40%" />
+          <col width="15%"  />
+          <col width="15%"  />
+          <col width="30%"  />
         </colgroup>
         <thead>
           <tr>
             <th>Name</th>
             <th>Due</th>
             <th>Category</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>
-              Return Library Books
-            </td>
-            <td>
-              <time datetime="2016-4-25">2016-4-25</time>
-            </td>
-            <td>
-              Personal
-            </td>
-          </tr>
-          <tr class="even">
-            <td>
-              Perform project demo to stakeholders
-            </td>
-            <td>
-              <time datetime="2016-4-25">2016-4-25</time>
-            </td>
-            <td>
-              Work
-            </td>
-          </tr>
-          <tr>
-            <td>
-              Meet friends for dinner
-            </td>
-            <td>
-              <time datetime="2016-4-25">2016-4-25</time>
-            </td>
-            <td>
-              Personal
-            </td>
-          </tr>
         </tbody>
       </table>
       <nav>
-        <a href="#">Add task</a>
+        <a href="#" id="btnAddTask">Add task</a>
       </nav>
     </section>
 
@@ -89,4 +60,68 @@
 <footer>
   You have 3 tasks
 </footer>
+
+<script>
+$(document).ready(function() {
+  $('[required="required"]').prev('label').append('<span>*</span>').children('span').addClass('required');
+  $('tbody tr:even').addClass('even');
+
+  $('#btnAddTask').click(function(evt) {
+		evt.preventDefault();
+		$('#taskCreation').removeClass('not');
+	});
+
+$('tbody tr').click(function(evnt) {
+  $(evnt.target).closest('td').siblings().andSelf().toggleClass('rowHighlight')
+});
+
+$('#tblTasks tbody').on('click', '.deleteRow', function(evnt) {
+  evnt.preventDefault();
+  $(evnt.target).parents('tr').remove();
+});
+
+$('#saveTask').click(function(evnt) {
+  evnt.preventDefault;
+  var task = $('form').toObject();
+  $('#taskRow').tmpl(task).appendTo($('#tblTasks tbody'));
+});
+
+(function($) {
+  $.fn.extend({
+    toObject: function() {
+      var results = {};
+      $.each(this.serializeArray(), function(i, v) {
+        results[v.name] = v.value;
+      });
+      return results;
+    },
+    fromObject: function(obj) {
+      $.each(this.find(':input'), function(i,v) {
+        var name = $(v).attr('name');
+        if (obj[name]) {
+          $(v).val(obj[name]);
+        } else {
+          $(v).val('');
+        }
+      })
+    }
+  });
+})(jQuery);
+});
+</script>
+
+<script id="taskRow" type="text/x-jQuery-tmpl">
+  <tr>
+  <td>${task}</td>
+  <td><time datetime="${requiredBy}">${requiredBy}</time></td>
+  <td>${category}</td>
+  <td>
+    <nav>
+      <a href="#" class="editRow">Edit</a>
+      <a href="#" class="completeRow">Complete</a>
+      <a href="#" class="deleteRow">Delete</a>
+    </nav>
+  </td>
+  </tr>
+</script>
 </html>
